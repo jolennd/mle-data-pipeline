@@ -166,8 +166,6 @@ cython_debug/
 
 # Private assistant files (not committed)
 private/
-
-# added by ai-mle-orchestration-kit
 .venv/
 .ruff_cache/
 .airflow/
