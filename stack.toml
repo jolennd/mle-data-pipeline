@@ -1,0 +1,8 @@
+# One choice per axis. Allowed values are in PLAYBOOK.md. Use "later" for an axis you do not need yet.
+# Changing this file needs an ADR and approval.
+[stack]
+database = "duckdb"
+transform = "dbt"
+orchestrator = "prefect"
+deploy = "later"
+monitoring = "later"

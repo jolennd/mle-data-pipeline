@@ -1,0 +1,21 @@
+-include make/db.mk
+-include make/transform.mk
+-include make/orchestrate.mk
+-include make/assistant.mk
+.PHONY: test-fast test lint format serve docker-build docker-test validate-gates
+
+test-fast:
+	uv run pytest -m "not dbserver and not docker and not deploy and not model and not data"
+test:
+	uv run pytest -m "not docker and not deploy"
+lint:
+	uv run ruff check --no-cache . && uv run ruff format --check .
+format:
+	uv run ruff format .
+serve:
+	uv run uvicorn data_pipeline.main:app --reload
+docker-build:
+	docker build -t app:local .
+docker-test:
+	uv run pytest -m docker
+validate-gates: lint test-fast

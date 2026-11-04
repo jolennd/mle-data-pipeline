@@ -14,13 +14,26 @@ dependencies = [
 dev = [
     "ipykernel>=7.3.0",
     "pytest>=9.1.1",
+    "ruff>=0.17.3",
 ]
 
 [tool.ty.environment]
-root = [".", "solution/src"]
+root = [".", "src"]
 
 [tool.uv]
 required-version = ">=0.13.5"
 # Apply certificate fixes without adding unused runtime packages.
 # Prefect's server still uses FastAPI's removed min_items argument.
 constraint-dependencies = ["certifi>=2026.10.19", "pip>=26.2.2", "fastapi<0.155"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+  "integration: needs more than one component",
+  "dbserver: needs the database server up",
+  "docker: needs Docker",
+  "model: model quality tests",
+  "data: data quality tests",
+  "deploy: needs a deployed target",
+]
