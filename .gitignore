@@ -166,3 +166,16 @@ cython_debug/
 
 # Private assistant files (not committed)
 private/
+
+# added by ai-mle-orchestration-kit
+.venv/
+.ruff_cache/
+.airflow/
+db-data/
+data/raw/
+*.skops
+.claude/
+CLAUDE.md
+make/assistant.mk
+*.duckdb
+*.duckdb.wal

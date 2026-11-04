@@ -20,6 +20,17 @@ This project builds a data pipeline that processes the `Green Taxi Trips` portio
 2. Writes an ELT pipeline that reads the locally staged files, processes the data, and calculates revenue per day.
 3. Use Prefect for workflow orchestration.
 
+## Tools
+
+| Axis           | Choice                                                    |
+| -------------- | --------------------------------------------------------- |
+| Database       | `duckdb`                                                  |
+| Transform      | `dbt` (with the DuckDB adapter)                           |
+| Orchestrator   | `prefect`                                                 |
+| Extract, load  | `requests` plus `click`, with DuckDB's own Parquet reader |
+| Tests          | `pytest`                                                  |
+| Lint and types | `ruff`, plus the template's `ty`                          |
+
 ## Additional Folders and Files
 
 | File / Folder                        | Description                             |
@@ -35,81 +46,3 @@ and Python 3.13.17 or a newer 3.13 patch release, as defined in
 
 > [!NOTE]
 > Throughout these steps, text in angle brackets like `<repo-name>` is a **placeholder**. Replace it, including the `< >` brackets, with your own value. For example, `cd <repo-name>` becomes `cd mle-data-pipeline-project`.
-
-### 1. Create the Repository from the Template
-
-Click **Use this template** on GitHub.
-
-When creating the repository:
-
-- Set yourself as the **Owner**
-- Choose a repository name
-- Disable **Include all branches**
-- Click **Create repository**
-
-> [!IMPORTANT]
-> If you are working in pairs or groups, only **one person** should complete this step.
-
----
-
-### 2. Add Collaborators (Pairs/Groups Only)
-
-If working with teammates:
-
-1. Open the repository on GitHub
-2. Go to **Settings → Collaborators**
-3. Add your teammates as collaborators
-4. Share the repository link with your team
-
-Teammates should accept the invitation before continuing.
-
----
-
-### 3. Clone the Repository
-
-Copy the SSH URL from the **Code** button on GitHub, then run:
-
-```bash
-git clone <copied-ssh-url>
-```
-
-The copied SSH URL will look like `git@github.com:<your-username>/<repo-name>.git`.
-
----
-
-### 4. Move into the Project Folder and Install Dependencies
-
-This installs all dependencies and creates a virtual environment in `.venv/`.
-
-```bash
-cd <repo-name>
-uv sync
-```
-
----
-
-### 5. Open the Repository in VS Code
-
-> [!NOTE]
-> Make sure you open VS Code from the project root so it automatically detects the environment created by `uv sync`.
-
-Launch VS Code in the project root folder:
-
-```bash
-code .
-```
-
-If you create a notebook to explore the data, select the Python environment created by `uv sync` as the kernel.
-
-## Reference Solution
-
-This repository includes a complete local reference implementation in [solution/](solution/).
-Use it to compare implementation choices and expected outputs. It is one way to solve the project, not the required structure for yours.
-
-See [solution/README.md](solution/README.md) for how to run it and how its files fit together.
-
-## Answer the Following Questions
-
-1. What are the steps you took to complete the project?
-2. What challenges did you face?
-3. What would you do differently if you had more time?

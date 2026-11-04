@@ -1,0 +1,7 @@
+name: transform
+version: "1.0.0"
+profile: transform
+model-paths: ["models"]
+models:
+  transform:
+    +materialized: view
