@@ -1,27 +1,26 @@
 # Data Pipeline Project
 
-This repository is used for a data pipeline project using ETL. It builds a pipeline that takes raw NYC taxi trip records and turns them into a processed result. It uses pull requests to track the progress.
+This repository is used for a ETL data pipeline project. It builds a pipeline that takes raw NYC taxi trip records and turns them into a processed result.
 
 ## Objectives
 
-- Write a script that downloads a public dataset into a local staging directory.
-- Build a pipeline that reads staged Parquet files and aggregates them into daily metrics.
-- Separate the pipeline into distinct extract, transform, and load stages.
-- Explain the difference between ETL and ELT, and justify which one your pipeline uses.
-- Orchestrate a pipeline with Prefect.
+- Writes a script that downloads a public dataset into a local staging directory.
+- Builds a pipeline that reads staged Parquet files and aggregates them into daily metrics.
+- Separates the pipeline into distinct extract, transform, and load stages.
+- Explains the difference between ETL and ELT, and justify which one your pipeline uses.
+- Orchestrates a pipeline with Prefect.
 - Document scripts, package, and tests.
+- Uses pull requests to track the progress.
 
 ## Project Brief
 
-In this project I will build a data pipeline that processes the `Green Taxi Trips` portion of the [NYC Taxi Trip dataset](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
+This project builds a data pipeline that processes the `Green Taxi Trips` portion of the [NYC Taxi Trip dataset](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
 
-1. Write a script that downloads the data for the first three months of 2025 and stores it in a local staging directory.
-2. Write an ETL or ELT pipeline that reads the locally staged files, processes the data, and calculates revenue per day.
+1. Writes a script that downloads the data for the first three months of 2025 and stores it in a local staging directory.
+2. Writes an ELT pipeline that reads the locally staged files, processes the data, and calculates revenue per day.
 3. Use Prefect for workflow orchestration.
 
-## Learning Path
-
-### Additional Folders and Files
+## Additional Folders and Files
 
 | File / Folder                        | Description                             |
 | ------------------------------------ | --------------------------------------- |
