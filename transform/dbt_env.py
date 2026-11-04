@@ -2,6 +2,7 @@
 Usage: python transform/dbt_env.py <dbt args>   e.g.  run | test | debug
 Fails loudly if DB_CONN is unset or its scheme is unknown. Stdlib only.
 """
+
 import os
 import subprocess
 import sys
@@ -16,7 +17,9 @@ def main() -> int:
     if not url:
         sys.exit("DB_CONN is not set. Copy .env.example to .env and load it.")
     parsed = urlparse(url)
-    scheme = parsed.scheme.split("+")[0]  # drop the driver part, e.g. postgresql+psycopg
+    scheme = parsed.scheme.split("+")[
+        0
+    ]  # drop the driver part, e.g. postgresql+psycopg
     env = dict(os.environ)
     if scheme in ("postgresql", "postgres"):
         target = "postgres"
@@ -29,10 +32,21 @@ def main() -> int:
         )
     elif scheme == "duckdb":
         target = "duckdb"
-        env["DBT_DUCKDB_PATH"] = parsed.path[1:] if parsed.path.startswith("//") else parsed.path.lstrip("/")
+        env["DBT_DUCKDB_PATH"] = (
+            parsed.path[1:] if parsed.path.startswith("//") else parsed.path.lstrip("/")
+        )
     else:
         sys.exit(f"unsupported DB_CONN scheme for dbt: {parsed.scheme!r}")
-    cmd = ["dbt", *sys.argv[1:], "--profiles-dir", str(HERE), "--project-dir", str(HERE), "--target", target]
+    cmd = [
+        "dbt",
+        *sys.argv[1:],
+        "--profiles-dir",
+        str(HERE),
+        "--project-dir",
+        str(HERE),
+        "--target",
+        target,
+    ]
     return subprocess.call(cmd, env=env)
 
 
