@@ -2,7 +2,7 @@
 Status: accepted, built
 Context: The deliverable is revenue per day. The same trips can answer other questions (by payment type, vendor, rate code), and a fact table with dimensions keeps those keys clean and tested.
 Decision: The chain is raw_green_trips, stg_green_trips, fct_trips plus dimensions, mart_daily_revenue, then data/processed/daily_revenue.parquet. The deliverable does not change.
-- fct_trips: one row per trip. trip_id is a hash of source_partition and all source columns. It is tested unique. If a month has exact duplicate rows, stop and report; do not deduplicate. Keys: pickup_date, payment_type, vendor_id, ratecode_id, pickup_location_id, dropoff_location_id. Measures: total_amount, trip_distance, passenger_count.
+- fct_trips: one row per trip. trip_id is a hash of source_partition and all source columns. It is tested unique. If a month has exact duplicate rows, stop and report; do not deduplicate. Keys: pickup_date, payment_type, vendor_id, ratecode_id, pickup_location_id, dropoff_location_id. Measures: fare_amount, tip_amount, total_amount, trip_distance, passenger_count.
 - dim_date: generated, 2025-01-01 to 2025-03-31, with day_of_week, is_weekend and month.
 - dim_payment_type, dim_vendor, dim_ratecode: dbt seeds from the TLC data dictionary (docs/02-data-sources.md). A null key in the source maps to -1 with the name Unknown.
 - dim_location: not now. It needs the TLC zone lookup file. Later option; the fact already carries both location ids.
