@@ -79,9 +79,44 @@ def test_missing_partition_file_fails(env):
 
 def test_load_cli(env):
     from click.testing import CliRunner
+
     from data_pipeline.ingest.load import main
 
     runner = CliRunner()
     assert runner.invoke(main, ["2025-01"]).exit_code == 0
     assert runner.invoke(main, ["2025-07"]).exit_code != 0
     assert counts() == {"2025-01": 9}
+
+
+@pytest.mark.parametrize(
+    "column",
+    [
+        "VendorID",
+        "RatecodeID",
+        "payment_type",
+        "PULocationID",
+        "DOLocationID",
+        "passenger_count",
+        "trip_distance",
+        "lpep_dropoff_datetime",
+        "store_and_fwd_flag",
+    ],
+)
+def test_type_change_in_any_staged_column_fails(env, column):
+    """The fact joins on these columns, so a type change must fail the load."""
+    import pyarrow as pa
+
+    from data_pipeline.ingest.load import SchemaDriftError, load_partition
+
+    table = synthetic_table()
+    index = table.schema.get_field_index(column)
+    changed = pa.string() if column != "store_and_fwd_flag" else pa.int64()
+    values = (
+        table.column(column).cast(pa.string())
+        if changed == pa.string()
+        else pa.array(range(table.num_rows), pa.int64())
+    )
+    table = table.set_column(index, column, values)
+    pq.write_table(table, env / "green_tripdata_2025-01.parquet")
+    with pytest.raises(SchemaDriftError):
+        load_partition("2025-01")
