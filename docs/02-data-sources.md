@@ -24,7 +24,7 @@ What needs cleaning, and where it goes:
 - Staging rename map: lpep_pickup_datetime to pickup_datetime, lpep_dropoff_datetime to dropoff_datetime, PULocationID to pickup_location_id, DOLocationID to dropoff_location_id, VendorID to vendor_id, RatecodeID to ratecode_id. total_amount keeps its name (A2). Staging adds pickup_date. Other columns: snake_case, finalized after exploration.
 - Impossible values: flag and keep. Null total_amount: row kept with a flag, adds nothing to revenue (A2 treats nulls the same on both sides). Null pickup time: excluded from staging, counted and logged like the date-range rows.
 - Export: data/processed/daily_revenue.parquet.
-- ehail_fee: kept in raw, dropped from staging (entirely null in January). To be recorded in the step 8 ADR.
+- ehail_fee: kept in raw, dropped from staging (entirely null in January). Recorded in ADR 15.
 - source_partition holds the partition value, for example 2025-01, the same value as the partition parameter.
 - Staging casts total_amount to DECIMAL(12,2) so sums are exact.
 - Model: star schema under the daily mart (ADR 13). Dimension keys for a null in the source are -1 (Unknown).
