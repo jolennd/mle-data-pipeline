@@ -24,3 +24,4 @@ What needs cleaning, and where it goes:
 - Staging rename map: lpep_pickup_datetime to pickup_datetime, lpep_dropoff_datetime to dropoff_datetime, PULocationID to pickup_location_id, DOLocationID to dropoff_location_id, VendorID to vendor_id, RatecodeID to ratecode_id. total_amount keeps its name (A2). Staging adds pickup_date. Other columns: snake_case, finalized after exploration.
 - Impossible values: flag and keep. Null total_amount: row kept with a flag, adds nothing to revenue (A2 treats nulls the same on both sides). Null pickup time: excluded from staging, counted and logged like the date-range rows.
 - Export: data/processed/daily_revenue.parquet.
+- ehail_fee: kept in raw, dropped from staging (entirely null in January). To be recorded in the step 8 ADR.
