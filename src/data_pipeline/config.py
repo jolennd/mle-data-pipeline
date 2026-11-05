@@ -22,3 +22,7 @@ def partitions() -> list[str]:
 
 def staging_dir() -> str:
     return require_env("STAGING_DIR")
+
+
+def processed_dir() -> str:
+    return require_env("PROCESSED_DIR")
