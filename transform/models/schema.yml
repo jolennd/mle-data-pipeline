@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_green_trips
+    columns:
+      - name: pickup_datetime
+        data_tests: [not_null]
+      - name: pickup_date
+        data_tests: [not_null]
+      - name: is_total_amount_missing
+        data_tests: [not_null]
+      - name: source_partition
+        data_tests: [not_null]
+      - name: loaded_at
+        data_tests: [not_null]
+  - name: mart_daily_revenue
+    columns:
+      - name: pickup_date
+        data_tests: [not_null, unique]
+      - name: revenue
+        data_tests: [not_null]
+      - name: trip_count
+        data_tests: [not_null]

@@ -2,7 +2,7 @@
 |---|---|---|---|
 | 0 | done | 2026-11-05 | Brief, traceability, data sources, design, stack.toml approved |
 | 1 | skipped | 2026-11-05 | ADR 0003 |
-| 2 | open | | |
+| 2 | done | 2026-11-05 | Aggregate path stg to mart, export and plain entry point for Jan to Mar. Reviewer PASS with fix list (bookkeeping, fixed). Star schema deferred until after Phase 3 (ADR 13). R17 to R22 are phase 3. Human approval pending |
 | 3 | open | | |
 | 4 | skipped | 2026-11-05 | ADR 0004 |
 | 4b | skipped | 2026-11-05 | ADR 0005 |
