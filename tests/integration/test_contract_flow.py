@@ -56,7 +56,7 @@ def test_flow_creates_tables(env, tmp_path):
     from flows.green_trips import green_trips_flow
 
     green_trips_flow("2025-01")
-    assert {"raw_green_trips", "stg_green_trips", "daily_revenue"} <= _tables(env)
+    assert {"raw_green_trips", "stg_green_trips", "mart_daily_revenue"} <= _tables(env)
     table = pq.read_table(tmp_path / "processed" / "daily_revenue.parquet")
     assert table.num_rows == IN_RANGE_DAYS
 
@@ -65,16 +65,15 @@ def test_flow_rerun_is_idempotent(env):
     from flows.green_trips import green_trips_flow
 
     green_trips_flow("2025-01")
-    first = {t: _count(env, t) for t in ("raw_green_trips", "daily_revenue")}
+    first = {t: _count(env, t) for t in ("raw_green_trips", "mart_daily_revenue")}
     green_trips_flow("2025-01")
-    second = {t: _count(env, t) for t in ("raw_green_trips", "daily_revenue")}
+    second = {t: _count(env, t) for t in ("raw_green_trips", "mart_daily_revenue")}
     assert first == second
 
 
 def test_failure_stops_downstream(env, monkeypatch):
-    from flows.green_trips import green_trips_flow
-
     from data_pipeline import pipeline
+    from flows.green_trips import green_trips_flow
 
     ran = []
     monkeypatch.setattr(pipeline, "load_partition", lambda p: ran.append("load"))

@@ -37,7 +37,7 @@ constraint-dependencies = ["certifi>=2026.10.19", "pip>=26.2.2", "fastapi<0.155"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 markers = [
   "integration: needs more than one component",
   "dbserver: needs the database server up",

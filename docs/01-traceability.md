@@ -16,12 +16,12 @@
 | R14 | The mart is exported to data/processed/daily_revenue.parquet; a rerun overwrites it with the same content | 2 | test_export_writes_processed_file | done |
 | R15 | A plain entry point runs download, load, transform and export for one month and stops at the first failing step | 2 | test_pipeline_run_end_to_end | done |
 | R16 | Findings from the exploration notebook are written to docs/02-data-sources.md | 2 | gate check by the reviewer | done |
-| R17 | Connection read only from DB_CONN; no secret in the repo | 2, 3 | test_no_secret_in_flow_files | open (phase 3) |
-| R18 | The flow takes one month (YYYY-MM) as its parameter and creates the expected tables | 3 | test_flow_creates_tables | open |
-| R19 | Rerunning a month through the flow keeps the same counts | 3 | test_flow_rerun_is_idempotent | open |
-| R20 | A failing step stops the steps after it and the run raises | 3 | test_failure_stops_downstream | open |
-| R21 | The download task retries 3 times, 60 seconds apart | 3 | test_retry_count_is_configured | open |
-| R22 | Tests never use the network | 2, 3 | test_no_network_in_tests | open (phase 3) |
+| R17 | Connection read only from DB_CONN; no secret in the repo | 2, 3 | test_no_secret_in_flow_files | done |
+| R18 | The flow takes one month (YYYY-MM) as its parameter and creates the expected tables | 3 | test_flow_creates_tables | done |
+| R19 | Rerunning a month through the flow keeps the same counts | 3 | test_flow_rerun_is_idempotent | done |
+| R20 | A failing step stops the steps after it and the run raises | 3 | test_failure_stops_downstream | done |
+| R21 | The download task retries 3 times, 60 seconds apart | 3 | test_retry_count_is_configured | done |
+| R22 | Tests never use the network | 2, 3 | test_no_network_in_tests | done |
 | R23 | fct_trips has one row per trip: trip_id is unique (ADR 13) | 2 | test_fct_trip_id_unique | deferred |
 | R24 | Every fact key has a row in its dimension; unknown source values map to -1 (ADR 13) | 2 | test_dims_referential_integrity | deferred |
 | R25 | Staging casts total_amount to DECIMAL(12,2) (ADR 13) | 2 | test_total_amount_is_exact_decimal | done |
