@@ -1,10 +1,7 @@
 import pytest
 from contract_helpers import columns_of, schema_of
 
-pytestmark = [
-    pytest.mark.integration,
-    pytest.mark.skip(reason="star schema after phase 3, ADR 13"),
-]
+pytestmark = pytest.mark.integration
 
 FCT_COLUMNS = {
     "trip_id",
