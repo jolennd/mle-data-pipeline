@@ -15,6 +15,8 @@ select
     coalesce(ratecode_id, -1)               as ratecode_id,
     pickup_location_id,
     dropoff_location_id,
+    fare_amount,
+    tip_amount,
     total_amount,
     trip_distance,
     passenger_count,
