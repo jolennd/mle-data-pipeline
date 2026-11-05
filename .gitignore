@@ -177,3 +177,7 @@ CLAUDE.md
 make/assistant.mk
 *.duckdb
 *.duckdb.wal
+
+# dbt
+transform/.user.yml
+transform/logs/
