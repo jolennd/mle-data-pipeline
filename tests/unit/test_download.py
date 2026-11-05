@@ -88,3 +88,20 @@ def test_download_unknown_partition_is_loud(cfg):
     with pytest.raises(DownloadError):
         download_partition("2025-07", fetch=fetch)
     assert fetch.urls == []
+
+
+def test_cli_downloads_and_force_flag(cfg, monkeypatch):
+    from click.testing import CliRunner
+
+    from data_pipeline.ingest import download
+
+    fetch = FakeFetch()
+    monkeypatch.setattr(download, "http_fetch", fetch)
+    runner = CliRunner()
+
+    assert runner.invoke(download.main, ["2025-01"]).exit_code == 0
+    assert runner.invoke(download.main, ["2025-01"]).exit_code == 0
+    assert len(fetch.urls) == 1
+    assert runner.invoke(download.main, ["2025-01", "--force"]).exit_code == 0
+    assert len(fetch.urls) == 2
+    assert runner.invoke(download.main, ["2025-07"]).exit_code != 0
