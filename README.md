@@ -148,10 +148,10 @@ I wrote the tests first and committed them failing, then built the pieces in sma
 - **Negative reversals.** Between 153 and 165 rows per month have a negative `total_amount`. Most have a positive twin, but not all of them do. Filtering them would overstate revenue, so I sum them as they are and document it (ADR 1).
 - **No natural key.** The data has no id column, so I could not deduplicate on a key. I checked that no month has exact duplicate rows, and I decided to stop and report if one ever does instead of dropping rows silently (ADR 13, ADR 15).
 - **The package was not installed.** The tests passed because pytest adds `src/` to the import path, but `make download` failed with `No module named 'data_pipeline'`. `pyproject.toml` had no build system, so `uv sync` never installed the package. Adding hatchling as the build backend fixed the commands and let the Prefect flows import the package too.
+- **Star schema.** The mart is built from `fct_trips`, which sits on `stg_green_trips` with `dim_date`, `dim_payment_type`, `dim_vendor` and `dim_ratecode` (ADR 13). The three-way check (staged, fact, mart all 3,395,290.56) catches a join that drops or doubles trips. A null payment type, rate code or vendor maps to -1 (Unknown).
 - **One writer in DuckDB.** The file database allows one writer at a time, so months run one after another, also in the Prefect parent flow.
 
 ### 3. What would you do differently if you had more time?
 
-- Build the star schema from ADR 13: a `fct_trips` fact table with `dim_date`, `dim_payment_type`, `dim_vendor` and `dim_ratecode`, and build the daily mart from it. I accepted the design but deferred it, so the mart is currently built straight from staging. The three-way totals check would then also catch a join that drops or doubles trips.
 - Add a zone dimension from the TLC zone lookup file, so revenue can be split by pickup and dropoff area. The location ids are already in the data.
 - Add data quality alerts, so a failed reconciliation or an unusual count of excluded rows reaches me without my reading the logs.
