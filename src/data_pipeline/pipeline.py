@@ -25,13 +25,13 @@ class TransformError(Exception):
 
 
 def run_transform() -> None:
-    """Build the models, then run their data tests. Both go through transform/dbt_env.py."""
+    """Load the seeds, build the models, then run their data tests. Both go through transform/dbt_env.py."""
     script = ROOT / "transform" / "dbt_env.py"
     env = {
         **os.environ,
         "PATH": f"{Path(sys.executable).parent}{os.pathsep}{os.environ.get('PATH', '')}",
     }
-    for command in ("run", "test"):
+    for command in ("seed", "run", "test"):
         result = subprocess.run(
             [sys.executable, str(script), command], check=False, env=env, cwd=ROOT
         )

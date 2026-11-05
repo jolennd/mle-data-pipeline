@@ -22,8 +22,8 @@
 | R20 | A failing step stops the steps after it and the run raises | 3 | test_failure_stops_downstream | done |
 | R21 | The download task retries 3 times, 60 seconds apart | 3 | test_retry_count_is_configured | done |
 | R22 | Tests never use the network | 2, 3 | test_no_network_in_tests | done |
-| R23 | fct_trips has one row per trip: trip_id is unique (ADR 13) | 2 | test_fct_trip_id_unique | deferred |
-| R24 | Every fact key has a row in its dimension; unknown source values map to -1 (ADR 13) | 2 | test_dims_referential_integrity | deferred |
+| R23 | fct_trips has one row per trip: trip_id is unique (ADR 13) | 2 | test_fct_trip_id_unique | done |
+| R24 | Every fact key has a row in its dimension; unknown source values map to -1 (ADR 13) | 2 | test_dims_referential_integrity | done |
 | R25 | Staging casts total_amount to DECIMAL(12,2) (ADR 13) | 2 | test_total_amount_is_exact_decimal | done |
 | R26 | db.connect() opens the duckdb file named by DB_CONN and fails loudly when it is unset or unsupported (ADR 14) | 2 | test_connect_reads_db_conn | done |
 | R27 | source_partition holds the partition value, for example 2025-01 | 2 | test_event_time_and_loaded_at_present (changed in 28e41d3: raw keeps rows with no pickup time, so only those may lack the event time) | done |

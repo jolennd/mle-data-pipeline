@@ -21,3 +21,39 @@ models:
         data_tests: [not_null]
       - name: trip_count
         data_tests: [not_null]
+  - name: fct_trips
+    columns:
+      - name: trip_id
+        data_tests: [not_null, unique]
+      - name: pickup_date
+        data_tests:
+          - not_null
+          - relationships: {to: ref('dim_date'), field: pickup_date}
+      - name: payment_type
+        data_tests:
+          - not_null
+          - relationships: {to: ref('dim_payment_type'), field: payment_type}
+      - name: vendor_id
+        data_tests:
+          - not_null
+          - relationships: {to: ref('dim_vendor'), field: vendor_id}
+      - name: ratecode_id
+        data_tests:
+          - not_null
+          - relationships: {to: ref('dim_ratecode'), field: ratecode_id}
+  - name: dim_date
+    columns:
+      - name: pickup_date
+        data_tests: [not_null, unique]
+  - name: dim_payment_type
+    columns:
+      - name: payment_type
+        data_tests: [not_null, unique]
+  - name: dim_vendor
+    columns:
+      - name: vendor_id
+        data_tests: [not_null, unique]
+  - name: dim_ratecode
+    columns:
+      - name: ratecode_id
+        data_tests: [not_null, unique]
