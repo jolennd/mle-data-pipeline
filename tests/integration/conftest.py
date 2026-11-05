@@ -14,7 +14,8 @@ ROOT = Path(__file__).resolve().parents[2]
 PARTITION = "2025-01"
 
 # (pickup, total_amount, payment_type, vendor_id, ratecode_id).
-# One row is before the range, one is in February, one has unknown payment and rate code.
+# One row is before the range, one is in February, one has unknown payment and rate code,
+# one has no pickup time and one has no amount.
 SYNTHETIC_TRIPS = [
     (datetime(2024, 12, 31, 23, 50), 10.0, 1, 2, 1),
     (datetime(2025, 1, 1, 0, 5), 20.0, 1, 2, 1),
@@ -25,10 +26,14 @@ SYNTHETIC_TRIPS = [
     (datetime(2025, 1, 3, 12, 0), 8.0, 3, 2, 1),
     (datetime(2025, 1, 31, 23, 59), 41.0, 1, 2, 5),
     (datetime(2025, 2, 2, 7, 15), 9.75, 4, 6, 1),
+    (None, 7.0, 1, 2, 1),  # no pickup time: excluded from staging, counted
+    (datetime(2025, 1, 3, 15, 0), None, 1, 2, 1),  # no amount: kept and flagged
 ]
 RANGE_START = datetime(2025, 1, 1)
 RANGE_END = datetime(2025, 4, 1)
-IN_RANGE = [t for t in SYNTHETIC_TRIPS if RANGE_START <= t[0] < RANGE_END]
+IN_RANGE = [
+    t for t in SYNTHETIC_TRIPS if t[0] is not None and RANGE_START <= t[0] < RANGE_END
+]
 IN_RANGE_DAYS = len({t[0].date() for t in IN_RANGE})  # Jan 1, 2, 3, 31 and Feb 2
 
 
@@ -101,6 +106,11 @@ def expected():
     return {
         "raw_rows": len(SYNTHETIC_TRIPS),
         "in_range_rows": len(IN_RANGE),
+        "excluded_null_pickup": sum(1 for t in SYNTHETIC_TRIPS if t[0] is None),
+        "excluded_out_of_range": sum(
+            1 for t in SYNTHETIC_TRIPS if t[0] is not None and t not in IN_RANGE
+        ),
+        "null_total_rows": sum(1 for t in IN_RANGE if t[1] is None),
         "mart_days": IN_RANGE_DAYS,
-        "in_range_total": sum(t[1] for t in IN_RANGE),
+        "in_range_total": sum(t[1] for t in IN_RANGE if t[1] is not None),
     }

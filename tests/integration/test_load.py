@@ -1,6 +1,6 @@
 import pyarrow.parquet as pq
 import pytest
-from conftest import synthetic_table
+from conftest import SYNTHETIC_TRIPS, synthetic_table
 
 pytestmark = pytest.mark.integration
 
@@ -85,7 +85,7 @@ def test_load_cli(env):
     runner = CliRunner()
     assert runner.invoke(main, ["2025-01"]).exit_code == 0
     assert runner.invoke(main, ["2025-07"]).exit_code != 0
-    assert counts() == {"2025-01": 9}
+    assert counts() == {"2025-01": len(SYNTHETIC_TRIPS)}
 
 
 @pytest.mark.parametrize(
