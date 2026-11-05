@@ -90,11 +90,12 @@ def built_db(tmp_path_factory):
         from data_pipeline.ingest.load import load_partition
 
         load_partition(PARTITION)
-        subprocess.run(
-            [sys.executable, str(ROOT / "transform" / "dbt_env.py"), "run"],
-            check=True,
-            cwd=ROOT,
-        )
+        for command in ("seed", "run"):
+            subprocess.run(
+                [sys.executable, str(ROOT / "transform" / "dbt_env.py"), command],
+                check=True,
+                cwd=ROOT,
+            )
         con = duckdb.connect(str(db_file), read_only=True)
         yield con
         con.close()

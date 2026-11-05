@@ -5,6 +5,7 @@ model-paths: ["models"]
 models:
   transform:
     +materialized: view
+seed-paths: ["seeds"]
 test-paths: ["tests"]
 vars:
   # Range from ADR 2: pickup dates >= range_start and < range_end are kept in staging.
