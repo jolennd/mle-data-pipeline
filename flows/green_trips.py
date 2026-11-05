@@ -56,7 +56,7 @@ def green_trips_flow(partition: str) -> None:
 
 @flow(flow_run_name="green-trips-all")
 def green_trips_all(partitions: list[str] | None = None) -> None:
-    """Months one after another. DuckDB has one writer, and the boundary days
+    """Months one after another. the database has one writer, and the boundary days
     are complete only after every month is loaded."""
     for partition in partitions or config.partitions():
         green_trips_flow(partition)
