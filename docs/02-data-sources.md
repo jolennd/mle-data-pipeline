@@ -3,7 +3,7 @@
 | NYC Green Taxi trip records, Parquet, one file per month (2025-01, 2025-02, 2025-03) | NYC Taxi and Limousine Commission (TLC) public trip data. Base URL and file name pattern live in config, not in code. Pattern `green_tripdata_YYYY-MM.parquet`. Base URL `https://d37ci6vzurychx.cloudfront.net/trip-data` checked 2026-11-05: `curl -I` for `green_tripdata_2025-01.parquet` returned HTTP/2 200, 1,178,451 bytes | Published monthly by the source. This project is a fixed backfill of Jan to Mar 2025, no live refresh | NYC TLC | Columns the output needs: `lpep_pickup_datetime` (sets the day) and `total_amount` (revenue, negatives kept). Files can contain rows with pickup dates outside their own month (ADR 2). Local copy is saved to the git-ignored `data/raw/` staging folder. |
 
 ## Exploration findings
-Notebook: `notebooks/02_explore_green_trips.ipynb`, read file `green_tripdata_2025-01.parquet` (checked 2026-11-05). Only January is explored so far. Feb and Mar counts are read when those files are loaded.
+Notebook: `notebooks/02_explore_green_trips.ipynb`, read file `green_tripdata_2025-01.parquet` (checked 2026-11-05). January is explored first below. February and March are in the section "February and March".
 - Columns: 21, names match the brief. `lpep_pickup_datetime` and `lpep_dropoff_datetime` are TIMESTAMP, `total_amount` is DOUBLE. Others: VendorID, store_and_fwd_flag, RatecodeID, PULocationID, DOLocationID, passenger_count, trip_distance, fare_amount, extra, mta_tax, tip_amount, tolls_amount, ehail_fee, improvement_surcharge, payment_type, trip_type, congestion_surcharge, cbd_congestion_fee.
 - Row count 2025-01 (expected value for A1): 48,326.
 - Missing values: `lpep_pickup_datetime` 0, `total_amount` 0, `ehail_fee` 48,326 (all null, column carries no information).
@@ -42,3 +42,27 @@ Source of the dimension seeds: TLC Data Dictionary, LPEP Trip Records (green), d
 - The fee columns do not always add up to total_amount (6,698 rows differ by more than 0.005). We use total_amount as published.
 - No exact duplicate rows in January (ADR 13 stops and reports if a month has them).
 
+## February and March (checked 2026-11-05)
+Same checks as January, run on the staged files before loading them.
+| Check | 2025-01 | 2025-02 | 2025-03 |
+|---|---|---|---|
+| Rows in file (A1 expected value) | 48,326 | 46,621 | 51,539 |
+| Columns, names and types vs loader | same | same | same |
+| Null pickup time / null total_amount | 0 / 0 | 0 / 0 | 0 / 0 |
+| Null payment_type (also null ratecode and passenger_count) | 1,836 | 2,517 | 3,549 |
+| ehail_fee null | all | all | all |
+| total_amount min / max | -114.0 / 371.4 | -76.5 / 642.14 | -473.1 / 473.1 |
+| Negative rows (with a positive twin) | 153 (153) | 165 (163) | 160 (159) |
+| Zero rows | 33 | 74 | 147 |
+| Exact duplicate rows | 0 | 0 | 0 |
+| Fee columns differ from total_amount | 6,698 | 7,190 | 8,369 |
+| Vendors | 1, 2 | 1, 2, 6 | 1, 2, 6 |
+| Rate codes | 1 to 6, 99, null | 1 to 5, 99, null | 1 to 5, 99, null |
+| Pickups before 2025-01-01 | 6 | 0 | 0 |
+| Pickups before the file's own month | 6 | 5 | 6 |
+| Pickups from the next month on | 37 | 14 | 5 |
+| Pickups from 2025-04-01 | 0 | 0 | 5 |
+- Payment type 5 appears in January and March (1 and 2 rows), not in February. Payment types 3 and 4 together are 0.16% (January), 0.18% (February) and 0.23% (March) of monthly revenue, still kept (ADR 1).
+- Differences from January, none of which changes a rule: (1) not every negative has a twin (2 in February, 1 in March), so the January statement "all negatives have a twin" is true for January only; summing as is stays correct (ADR 1). (2) Five March rows have pickups from 2025-04-01 on; they are outside the range and excluded in staging like January's six December rows (ADR 2). (3) Vendor 6 appears from February; it is in the dictionary and the future dimension seed.
+- Because the day comes from the pickup date, a day's revenue depends on which files are loaded: January 31 includes trips that sit in the February file, and March 1 includes trips from the February file. Run all three months before reading daily totals.
+- Result after loading all three months: raw rows equal the source rows for every month (A1). Staged 146,475, excluded 11 (all outside the range, none without a pickup time). Staged total 3,395,290.56 = mart revenue total 3,395,290.56 (A2), and the total computed straight from the three source files in the range is also 3,395,290.56. The mart has 90 days, 2025-01-01 to 2025-03-31.
