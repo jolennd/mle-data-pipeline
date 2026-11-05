@@ -12,6 +12,8 @@ FCT_COLUMNS = {
     "pickup_location_id",
     "dropoff_location_id",
     "total_amount",
+    "fare_amount",
+    "tip_amount",
     "trip_distance",
     "passenger_count",
 }
@@ -80,3 +82,12 @@ def test_totals_match_across_three_tables(built_db, expected):
     stg, fct, mart = (float(v) for v in totals.values())
     assert abs(stg - fct) <= 0.01
     assert abs(fct - mart) <= 0.01
+
+
+def test_fare_and_tip_totals_match_staging(built_db):
+    stg = schema_of(built_db, "stg_green_trips")
+    fct = schema_of(built_db, "fct_trips")
+    for column in ("fare_amount", "tip_amount"):
+        (stg_sum,) = built_db.execute(f"select sum({column}) from {stg}").fetchone()
+        (fct_sum,) = built_db.execute(f"select sum({column}) from {fct}").fetchone()
+        assert abs(float(stg_sum) - float(fct_sum)) <= 0.01, column
