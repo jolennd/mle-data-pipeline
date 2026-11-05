@@ -1,6 +1,9 @@
+-include .env
+export
 -include make/db.mk
 -include make/transform.mk
 -include make/orchestrate.mk
+-include make/ingest.mk
 -include make/assistant.mk
 .PHONY: test-fast test lint format serve docker-build docker-test validate-gates
 
