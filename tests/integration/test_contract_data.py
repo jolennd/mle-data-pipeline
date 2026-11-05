@@ -47,7 +47,7 @@ def test_key_unique(built_db):
     assert rows == days
 
 
-def test_event_time_and_loaded_at_present(built_db):
+def test_event_time_and_loaded_at_present(built_db, expected):
     raw = schema_of(built_db, "raw_green_trips")
     stg = schema_of(built_db, "stg_green_trips")
     nulls = built_db.execute(
@@ -55,7 +55,8 @@ def test_event_time_and_loaded_at_present(built_db):
         f"count(*) filter (where source_partition is null), "
         f"count(*) filter (where lpep_pickup_datetime is null) from {raw}"
     ).fetchone()
-    assert nulls == (0, 0, 0)
+    # Raw keeps every source row, so only the rows with no pickup time may lack the event time.
+    assert nulls == (0, 0, expected["excluded_null_pickup"])
     (stg_nulls,) = built_db.execute(
         f"select count(*) filter (where pickup_datetime is null or pickup_date is null) "
         f"from {stg}"
