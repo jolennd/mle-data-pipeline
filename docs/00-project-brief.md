@@ -15,10 +15,10 @@ Baseline to beat:
 ## Fill this block when kind is pipeline
 Source and refresh rate: NYC TLC Green Taxi monthly Parquet files, Jan to Mar 2025. Published monthly, fixed backfill, no live refresh.
 Grain of the output (one row per what): one row per pickup date (from lpep_pickup_datetime).
-Output tables or files: DuckDB tables raw_green_trips, stg_green_trips, mart_daily_revenue; file data/processed/daily_revenue.parquet.
+Output tables or files: DuckDB tables raw_green_trips, stg_green_trips, fct_trips, dim_date, dim_payment_type, dim_vendor, dim_ratecode, mart_daily_revenue (ADR 13); file data/processed/daily_revenue.parquet. The deliverable stays revenue per day (pickup_date, revenue, trip_count).
 Acceptance numbers (must reconcile to the source):
 - A1: raw_green_trips row count per month equals the row count of the source Parquet file for that month. Expected values are read from the real files (TBD in phase 2).
-- A2: sum of mart_daily_revenue revenue equals sum of total_amount over stg_green_trips, within 0.01. stg_green_trips keeps pickup dates >= 2025-01-01 and < 2025-04-01.
+- A2: the total_amount sum over stg_green_trips equals the sum over fct_trips and equals the sum of mart_daily_revenue revenue, within 0.01. stg_green_trips keeps pickup dates >= 2025-01-01 and < 2025-04-01.
 - Excluded rows (outside the range) are counted and logged, not silently dropped.
 ELT. Load the Parquet files unchanged into raw_green_trips, then transform inside the database with dbt. Why: raw data stays untouched and re-readable, transforms are versioned SQL with tests, and reruns are idempotent (M5).
 First check that fails when the output is wrong: A2, the totals reconciliation (mart revenue vs staged total_amount).
