@@ -90,14 +90,68 @@ and Python 3.13.17 or a newer 3.13 patch release, as defined in
 
 ## How to Run
 
-To be completed in the final pull request. This section will list the commands to:
+All commands go through `make`, which loads `.env`. Settings are never hard-coded.
 
-1. Install dependencies with `uv sync`.
-2. Download the data into `data/raw/`.
-3. Run the plain pipeline end to end.
-4. Run the pipeline as a Prefect flow.
-5. Run the tests.
+1. Install dependencies and create the local settings file:
+
+   ```bash
+   uv sync
+   cp .env.example .env
+   ```
+
+2. Run the plain pipeline (download, load, transform, export) once per month. Run all three months before reading daily totals, because a day is complete only after every month is loaded:
+
+   ```bash
+   make pipeline-run PARTITION=2025-01
+   make pipeline-run PARTITION=2025-02
+   make pipeline-run PARTITION=2025-03
+   ```
+
+3. Or run it as a Prefect flow:
+
+   ```bash
+   make flow-run PARTITION=2025-01   # one month
+   make flow-run PARTITION=all       # January to March, one after another
+   make flow-serve                   # serve the monthly schedule (keeps running, Ctrl+C to stop)
+   ```
+
+4. Run the tests:
+
+   ```bash
+   make test             # Python tests
+   make transform-test   # dbt data tests, run after the pipeline has loaded data
+   ```
+
+### Output
+
+The result is written to `data/processed/daily_revenue.parquet` with one row per pickup date (`pickup_date`, `revenue`, `trip_count`). After January to March are loaded, I expect:
+
+| Check         | Expected value |
+| ------------- | -------------- |
+| Days          | 90             |
+| Trips         | 146,475        |
+| Total revenue | 3,395,290.56   |
 
 ## Project Review Questions
 
-To be completed in the final pull request.
+### 1. What are the steps you took to complete the project?
+
+I started with a brief that fixed the grain (one row per pickup date) and the acceptance numbers: raw row counts must equal the source files, and the staged, mart and exported totals must agree within 0.01. I chose revenue as `total_amount` summed as it is (ADR 1) and chose ELT, so the raw data stays untouched and the transforms are versioned SQL.
+
+Then I explored the three monthly files in a notebook and wrote down what I found in `docs/02-data-sources.md`: column types, missing values, negative amounts, and pickup dates outside a file's month. Those findings led to the staging rules in ADR 2 and ADR 15.
+
+I wrote the tests first and committed them failing, then built the pieces in small batches: a download script, a load into `raw_green_trips`, dbt models for staging and the daily mart, an export to Parquet, and a plain entry point that runs the steps in order. Last I wrapped the same functions in Prefect flows with retries on the download and a monthly schedule (ADR 17). Each stage was reviewed against its gate before I merged it.
+
+### 2. What challenges did you face?
+
+- **Neighbouring months.** The monthly files contain trips from neighbouring months, for example January 31 trips in the February file. The day comes from the pickup date, not the file, so a day is complete only after all months are loaded. I load one month at a time, and I read daily totals only after all three have run (ADR 2). Eleven rows fall outside January to March and are excluded in staging, counted and logged.
+- **Negative reversals.** Between 153 and 165 rows per month have a negative `total_amount`. Most have a positive twin, but not all of them do. Filtering them would overstate revenue, so I sum them as they are and document it (ADR 1).
+- **No natural key.** The data has no id column, so I could not deduplicate on a key. I checked that no month has exact duplicate rows, and I decided to stop and report if one ever does instead of dropping rows silently (ADR 13, ADR 15).
+- **The package was not installed.** The tests passed because pytest adds `src/` to the import path, but `make download` failed with `No module named 'data_pipeline'`. `pyproject.toml` had no build system, so `uv sync` never installed the package. Adding hatchling as the build backend fixed the commands and let the Prefect flows import the package too.
+- **One writer in DuckDB.** The file database allows one writer at a time, so months run one after another, also in the Prefect parent flow.
+
+### 3. What would you do differently if you had more time?
+
+- Build the star schema from ADR 13: a `fct_trips` fact table with `dim_date`, `dim_payment_type`, `dim_vendor` and `dim_ratecode`, and build the daily mart from it. I accepted the design but deferred it, so the mart is currently built straight from staging. The three-way totals check would then also catch a join that drops or doubles trips.
+- Add a zone dimension from the TLC zone lookup file, so revenue can be split by pickup and dropoff area. The location ids are already in the data.
+- Add data quality alerts, so a failed reconciliation or an unusual count of excluded rows reaches me without my reading the logs.
