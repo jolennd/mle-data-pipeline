@@ -82,6 +82,7 @@ def built_db(tmp_path_factory):
     mp.setenv("SOURCE_FILE_PATTERN", "green_tripdata_{partition}.parquet")
     mp.setenv("PARTITIONS", PARTITION)
     mp.setenv("STAGING_DIR", str(staging))
+    mp.setenv("PROCESSED_DIR", str(tmp / "processed"))
     mp.setenv(
         "PATH", f"{Path(sys.executable).parent}:{__import__('os').environ['PATH']}"
     )
