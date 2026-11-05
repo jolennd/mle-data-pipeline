@@ -50,18 +50,18 @@ mle-data-pipeline/
 └── uv.lock               # Dependency lock file
 ```
 
-| File / Folder                             | Description                                                          |
-| ----------------------------------------- | -------------------------------------------------------------------- |
-| `data/raw/`                               | Monthly Green Taxi Parquet files for Jan to Mar 2025, as downloaded. |
-| `data/processed/`                         | Daily revenue result written by the pipeline.                        |
-| `notebooks/`                              | Exploration of columns, types, missing values, and value ranges.     |
-| [`src/data_pipeline/`](src/data_pipeline) | Python package: download, load into DuckDB, export, entry point.     |
-| [`transform/`](transform)                 | dbt project with `stg_green_trips` and `mart_daily_revenue`.         |
-| [`flows/`](flows)                         | Prefect flow with download, load, and transform tasks.               |
-| [`tests/`](tests)                         | Tests for download, load, transform, reconciliation, and the flow.   |
-| [`docs/`](docs)                           | Project brief, traceability table, design notes, and ADRs.           |
-| [**pyproject.toml**](pyproject.toml)      | Project configuration and dependencies.                              |
-| [**uv.lock**](uv.lock)                    | Dependency lock file.                                                |
+| File / Folder                             | Description                                                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `data/raw/`                               | Monthly Green Taxi Parquet files for Jan to Mar 2025, as downloaded.                         |
+| `data/processed/`                         | Daily revenue result written by the pipeline.                                                |
+| `notebooks/`                              | Exploration of columns, types, missing values, and value ranges.                             |
+| [`src/data_pipeline/`](src/data_pipeline) | Python package: download, load into DuckDB, export, entry point.                             |
+| [`transform/`](transform)                 | dbt project: staging, star schema (`fct_trips`, dimensions, seeds) and `mart_daily_revenue`. |
+| [`flows/`](flows)                         | Prefect flow with download, load, and transform tasks.                                       |
+| [`tests/`](tests)                         | Tests for download, load, transform, reconciliation, and the flow.                           |
+| [`docs/`](docs)                           | Project brief, traceability table, design notes, and ADRs.                                   |
+| [**pyproject.toml**](pyproject.toml)      | Project configuration and dependencies.                                                      |
+| [**uv.lock**](uv.lock)                    | Dependency lock file.                                                                        |
 
 ### Additional Info
 
@@ -75,6 +75,8 @@ NYC TLC Parquet files
   -> data/raw/                (download script)
   -> raw_green_trips          (load into DuckDB, all rows kept)
   -> stg_green_trips          (dbt: typed, cleaned, pickup dates Jan to Mar 2025)
+  -> fct_trips + dim_date, dim_payment_type, dim_vendor, dim_ratecode
+                              (dbt: star schema, one row per trip, unknown codes = -1)
   -> mart_daily_revenue       (dbt: one row per pickup date, sum of total_amount)
   -> data/processed/          (export)
 ```
@@ -140,7 +142,9 @@ I started with a brief that fixed the grain (one row per pickup date) and the ac
 
 Then I explored the three monthly files in a notebook and wrote down what I found in `docs/02-data-sources.md`: column types, missing values, negative amounts, and pickup dates outside a file's month. Those findings led to the staging rules in ADR 2 and ADR 15.
 
-I wrote the tests first and committed them failing, then built the pieces in small batches: a download script, a load into `raw_green_trips`, dbt models for staging and the daily mart, an export to Parquet, and a plain entry point that runs the steps in order. Last I wrapped the same functions in Prefect flows with retries on the download and a monthly schedule (ADR 17). Each stage was reviewed against its gate before I merged it.
+Tests were written first and I committed them failing. Then I built the pieces in small batches: a download script, a load into `raw_green_trips`, dbt models for staging and the daily mart, an export to Parquet, and a plain entry point that runs the steps in order. Last I wrapped the same functions in Prefect flows with retries on the download and a monthly schedule (ADR 17). Each stage was reviewed against its gate before I merged it.
+
+Finally I added a star schema under the mart (ADR 13): `fct_trips` with one row per trip, a generated `dim_date`, and `dim_payment_type`, `dim_vendor` and `dim_ratecode` loaded as seeds from the TLC data dictionary. A null code maps to an Unknown row (-1), so no trip is lost in a join. The daily mart now reads from the fact table, and the totals check covers all three layers: staging, fact and mart each total 3,395,290.56.
 
 ### 2. What challenges did you face?
 
@@ -148,7 +152,6 @@ I wrote the tests first and committed them failing, then built the pieces in sma
 - **Negative reversals.** Between 153 and 165 rows per month have a negative `total_amount`. Most have a positive twin, but not all of them do. Filtering them would overstate revenue, so I sum them as they are and document it (ADR 1).
 - **No natural key.** The data has no id column, so I could not deduplicate on a key. I checked that no month has exact duplicate rows, and I decided to stop and report if one ever does instead of dropping rows silently (ADR 13, ADR 15).
 - **The package was not installed.** The tests passed because pytest adds `src/` to the import path, but `make download` failed with `No module named 'data_pipeline'`. `pyproject.toml` had no build system, so `uv sync` never installed the package. Adding hatchling as the build backend fixed the commands and let the Prefect flows import the package too.
-- **Star schema.** The mart is built from `fct_trips`, which sits on `stg_green_trips` with `dim_date`, `dim_payment_type`, `dim_vendor` and `dim_ratecode` (ADR 13). The three-way check (staged, fact, mart all 3,395,290.56) catches a join that drops or doubles trips. A null payment type, rate code or vendor maps to -1 (Unknown).
 - **One writer in DuckDB.** The file database allows one writer at a time, so months run one after another, also in the Prefect parent flow.
 
 ### 3. What would you do differently if you had more time?
