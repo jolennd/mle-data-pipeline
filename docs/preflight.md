@@ -1,4 +1,4 @@
-# Preflight: <module path>
+# Preflight: <path>
 Go or no-go:
 
 | ID | Severity | Status | Finding | Evidence | Verify |
