@@ -13,19 +13,23 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 PARTITION = "2025-01"
 
-# (pickup, total_amount). One row is before the range, one is in February.
+# (pickup, total_amount, payment_type, vendor_id, ratecode_id).
+# One row is before the range, one is in February, one has unknown payment and rate code.
 SYNTHETIC_TRIPS = [
-    (datetime(2024, 12, 31, 23, 50), 10.0),
-    (datetime(2025, 1, 1, 0, 5), 20.0),
-    (datetime(2025, 1, 1, 8, 0), 15.5),
-    (datetime(2025, 1, 1, 22, 30), -5.0),
-    (datetime(2025, 1, 2, 9, 0), 12.25),
-    (datetime(2025, 1, 2, 18, 45), 30.0),
-    (datetime(2025, 1, 3, 12, 0), 8.0),
-    (datetime(2025, 1, 31, 23, 59), 41.0),
-    (datetime(2025, 2, 2, 7, 15), 9.75),
+    (datetime(2024, 12, 31, 23, 50), 10.0, 1, 2, 1),
+    (datetime(2025, 1, 1, 0, 5), 20.0, 1, 2, 1),
+    (datetime(2025, 1, 1, 8, 0), 15.5, 2, 2, 1),
+    (datetime(2025, 1, 1, 22, 30), -5.0, 2, 2, 1),
+    (datetime(2025, 1, 2, 9, 0), 12.25, None, 1, None),
+    (datetime(2025, 1, 2, 18, 45), 30.0, 1, 1, 2),
+    (datetime(2025, 1, 3, 12, 0), 8.0, 3, 2, 1),
+    (datetime(2025, 1, 31, 23, 59), 41.0, 1, 2, 5),
+    (datetime(2025, 2, 2, 7, 15), 9.75, 4, 6, 1),
 ]
-IN_RANGE_DAYS = 5  # Jan 1, 2, 3, 31 and Feb 2
+RANGE_START = datetime(2025, 1, 1)
+RANGE_END = datetime(2025, 4, 1)
+IN_RANGE = [t for t in SYNTHETIC_TRIPS if RANGE_START <= t[0] < RANGE_END]
+IN_RANGE_DAYS = len({t[0].date() for t in IN_RANGE})  # Jan 1, 2, 3, 31 and Feb 2
 
 
 def synthetic_table() -> pa.Table:
@@ -33,11 +37,11 @@ def synthetic_table() -> pa.Table:
     pickups = [t[0] for t in SYNTHETIC_TRIPS]
     return pa.table(
         {
-            "VendorID": pa.array([2] * n, pa.int32()),
+            "VendorID": pa.array([t[3] for t in SYNTHETIC_TRIPS], pa.int32()),
             "lpep_pickup_datetime": pa.array(pickups, pa.timestamp("us")),
             "lpep_dropoff_datetime": pa.array(pickups, pa.timestamp("us")),
             "store_and_fwd_flag": ["N"] * n,
-            "RatecodeID": pa.array([1] * n, pa.int64()),
+            "RatecodeID": pa.array([t[4] for t in SYNTHETIC_TRIPS], pa.int64()),
             "PULocationID": pa.array([75] * n, pa.int32()),
             "DOLocationID": pa.array([166] * n, pa.int32()),
             "passenger_count": pa.array([1] * n, pa.int64()),
@@ -50,7 +54,7 @@ def synthetic_table() -> pa.Table:
             "ehail_fee": pa.array([None] * n, pa.float64()),
             "improvement_surcharge": [1.0] * n,
             "total_amount": [t[1] for t in SYNTHETIC_TRIPS],
-            "payment_type": pa.array([1] * n, pa.int64()),
+            "payment_type": pa.array([t[2] for t in SYNTHETIC_TRIPS], pa.int64()),
             "trip_type": pa.array([1] * n, pa.int64()),
             "congestion_surcharge": [0.0] * n,
             "cbd_congestion_fee": [0.0] * n,
@@ -94,4 +98,9 @@ def built_db(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def expected():
-    return {"raw_rows": len(SYNTHETIC_TRIPS), "mart_days": IN_RANGE_DAYS}
+    return {
+        "raw_rows": len(SYNTHETIC_TRIPS),
+        "in_range_rows": len(IN_RANGE),
+        "mart_days": IN_RANGE_DAYS,
+        "in_range_total": sum(t[1] for t in IN_RANGE),
+    }
