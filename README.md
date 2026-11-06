@@ -61,7 +61,9 @@ mle-data-pipeline/
 ├── flows/                # Prefect flows and their entry point
 ├── tests/                # unit and integration tests
 ├── docs/                 # brief, traceability, data sources, design, ADRs
-├── Makefile              # run, test and orchestration targets
+├── Dockerfile            # pipeline image
+├── compose.yaml          # Prefect server, flow and pipeline services
+├── Makefile              # run, test, orchestration and Docker targets
 ├── pyproject.toml        # project configuration and dependencies
 └── uv.lock               # dependency lock file
 ```
@@ -118,6 +120,21 @@ make flow-run PARTITION=2025-01   # one month
 make flow-run PARTITION=all       # January to March, one after another
 make flow-serve                   # serve the monthly schedule (keeps running, Ctrl+C to stop)
 ```
+
+### Run with Docker
+
+The image runs the pipeline as a batch (no port, no API). Data (downloads, database, results) lives in a Docker named volume called `data`, so it is separate from your working folder.
+
+```bash
+make docker-build                      # build the image
+make docker-flow                       # start the Prefect server, then run all months through it
+make docker-pipeline PARTITION=2025-01 # plain entry point, one month, no Prefect
+make docker-results                    # list the exported files in the volume
+make docker-down                       # stop the server, keep the data
+make docker-clean                      # delete the data volume (asks first)
+```
+
+The Prefect UI for container runs is at http://127.0.0.1:4201. Run `docker-flow` and `docker-pipeline` one at a time, because the database allows a single writer. Settings (database path, months, folders) are in the `environment` block of `compose.yaml`. `make docker-test` builds the image and runs a small synthetic month inside it, with no network.
 
 ### Follow a run
 
