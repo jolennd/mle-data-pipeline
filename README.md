@@ -1,5 +1,14 @@
 # NYC Green Taxi Daily Revenue Pipeline
 
+[![Python checks](https://github.com/jolennd/mle-data-pipeline/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/jolennd/mle-data-pipeline/actions/workflows/tests.yml)
+[![tests](https://img.shields.io/badge/tests-unit%20%7C%20integration%20%7C%20docker-blue)](#run-the-checks)
+[![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](#setup)
+[![processing](https://img.shields.io/badge/processing-batch%20ELT-blue)](#data-flow)
+[![dbt](https://img.shields.io/badge/dbt-star%20schema-FF694B?logo=dbt&logoColor=white)](#data-flow)
+[![DuckDB](https://img.shields.io/badge/DuckDB-local%20warehouse-FFF000?logo=duckdb&logoColor=black)](#tools-and-why-i-used-them)
+[![Prefect](https://img.shields.io/badge/Prefect-local%20orchestration-blue)](#follow-a-run)
+[![Docker](https://img.shields.io/badge/Docker-local-2496ED?logo=docker&logoColor=white)](#run-with-docker)
+
 An ELT pipeline that downloads the NYC Green Taxi trip records for January to March 2025, loads them into DuckDB, models them with dbt into a star schema, and produces revenue per day. Prefect orchestrates the runs.
 
 ## What it does
