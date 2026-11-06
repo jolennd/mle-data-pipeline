@@ -1,15 +1,11 @@
-# Pull Request Checklist
+## What changed
 
-<!-- If you are done with a topic mark the checkboxes with an `x` (like `[x]`) -->
+<!-- One or two sentences. -->
 
-- [ ] Created a script that downloads the first three months of 2025 Green Taxi data.
-- [ ] Stored the downloaded files in a local staging directory.
-- [ ] Created an ETL or ELT pipeline that reads the locally staged files.
-- [ ] Calculated revenue per day.
-- [ ] Documented how to run the project.
-- [ ] Answered the project review questions in my README.
-- [ ] Ran the project locally and verified the expected outputs.
+## Checklist
 
-Optional extension:
-
-- [ ] Used Prefect for workflow orchestration.
+- [ ] `make validate-gates` passes (lint and fast tests)
+- [ ] `make transform-test` passes after a pipeline run, if transforms changed
+- [ ] README and `docs/` updated if behavior or commands changed
+- [ ] ADR added in `docs/adr/` for any new decision
+- [ ] No secrets, personal paths or local data committed

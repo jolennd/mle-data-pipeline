@@ -9,7 +9,7 @@
 7. Plain entry point: runs download, load, transform and export in order for one month, and stops at the first failing step. It works without the orchestrator.
 8. Prefect flow: wraps the same functions in the same order as tasks. The flow takes one month (YYYY-MM) as its parameter. It adds retries on the download task and no data logic.
 
-## Handoffs (see core/ownership-and-contracts.md)
+## Handoffs
 | From | To | Contract | Test |
 |---|---|---|---|
 | Source Parquet files | `raw_green_trips` | All source rows kept, plus `loaded_at` and `source_partition`. Row count per month equals the source file (A1). Schema drift fails the load. | `test_raw_row_count_matches_source`, `test_schema_drift_fails` |
@@ -19,7 +19,7 @@
 | `mart_daily_revenue` | `data/processed/daily_revenue.parquet` | Same rows and columns as the mart. A rerun overwrites with the same content. | `test_export_writes_processed_file` |
 | Plain entry point | Prefect flow | The flow calls the same functions in the same order. A month in, the same counts out on rerun. A failing step stops the rest. | `test_pipeline_run_end_to_end`, `test_flow_rerun_is_idempotent`, `test_failure_stops_downstream` |
 
-## Tool choices (one per axis, see stack.toml)
+## Tool choices (see stack.toml)
 - database, duckdb: embedded single-file database, no server to run locally. One writer at a time, so loads run one month at a time.
 - transform, dbt: versioned SQL models with built-in tests. The totals reconciliation (A2) runs here.
 - orchestrator, prefect: Python-native flows for download, load, transform and export. The download task retries 3 times, 60 seconds apart. The flow takes one month (YYYY-MM) as its parameter. A failed step stops the run with a clear error.

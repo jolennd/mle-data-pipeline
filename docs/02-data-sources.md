@@ -9,16 +9,16 @@ Notebook: `notebooks/02_explore_green_trips.ipynb`, read file `green_tripdata_20
 - Missing values: `lpep_pickup_datetime` 0, `total_amount` 0, `ehail_fee` 48,326 (all null, column carries no information).
 - `total_amount`: min -114.0, max 371.4, sum 1,093,822.36. 153 negative rows (ADR 1 keeps them), 33 zero rows.
 - `lpep_pickup_datetime`: min 2024-12-25 23:13:15, max 2025-02-05 18:46:24. 6 rows have pickups before 2025-01-01 (2024-12-25: 1, 2024-12-29: 1, 2024-12-31: 4), outside Jan to Mar 2025, so staging excludes them (ADR 2). 37 rows have pickups on 2025-02-01 to 2025-02-05, outside the file's month but inside the range, so staging keeps them and they count on their pickup day.
-- Natural key: none. No id column, and all 48,326 rows are distinct on all columns. Staging is not deduplicated (ADR needed in step 8).
+- Natural key: none. No id column, and all 48,326 rows are distinct on all columns. Staging is not deduplicated (ADR 15).
 - No stop condition hit: an event time column exists and the key question is answered.
 
 What needs cleaning, and where it goes:
 - Rows with pickup before 2025-01-01: excluded in staging, counted and logged (data test `test_staging_date_range`, `test_excluded_rows_are_counted_and_logged`).
 - Negative and zero `total_amount`: kept (ADR 1, `test_revenue_includes_negative_amounts`).
 - No null pickup or null `total_amount` in January: the flag and exclude rules still get a test on a fixture, since other months may differ.
-- `ehail_fee` all null: carried through, ignored by the mart. Decide in the step 8 ADR whether staging drops it.
+- `ehail_fee` all null: carried through, ignored by the mart. Staging drops it (ADR 15).
 
-## Decisions (phase 2)
+## Decisions
 - Partition format: YYYY-MM.
 - Natural key: none (confirmed in January: no id column, no exact duplicates). If staging is not deduplicated, an ADR says why.
 - Staging rename map: lpep_pickup_datetime to pickup_datetime, lpep_dropoff_datetime to dropoff_datetime, PULocationID to pickup_location_id, DOLocationID to dropoff_location_id, VendorID to vendor_id, RatecodeID to ratecode_id. total_amount keeps its name (A2). Staging adds pickup_date. Other columns: snake_case, finalized after exploration.

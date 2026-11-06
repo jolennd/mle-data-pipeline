@@ -1,4 +1,4 @@
-"""Shared guard: no test may reach a non-local address (R22)."""
+"""Shared guard: no test may reach a non-local address (R22 in docs/01-traceability.md)."""
 
 import socket
 

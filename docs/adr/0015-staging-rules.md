@@ -1,6 +1,6 @@
 # ADR 15: Staging rules for rows and columns
 Status: accepted
-Context: Phase 2 steps 6 and 8 need explicit rules for duplicates, odd rows and unused columns. January findings are in docs/02-data-sources.md.
+Context: Building staging and checking totals needs explicit rules for duplicates, odd rows and unused columns. January findings are in docs/02-data-sources.md.
 Decision:
 - No natural key and no exact duplicate rows in January, so stg_green_trips is not deduplicated. A month with exact duplicates is a stop-and-report case (ADR 13 trip_id).
 - ehail_fee is kept in raw and dropped from staging (always null in January).

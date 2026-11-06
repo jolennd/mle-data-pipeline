@@ -164,17 +164,13 @@ cython_debug/
 # MacOS files
 .DS_Store
 
-# Private assistant files (not committed)
-private/
+# Local environment, caches and data
 .venv/
 .ruff_cache/
 .airflow/
 db-data/
 data/raw/
 *.skops
-.claude/
-CLAUDE.md
-make/assistant.mk
 *.duckdb
 *.duckdb.wal
 
