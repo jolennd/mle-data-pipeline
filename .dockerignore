@@ -7,3 +7,8 @@ data
 db-data
 tests
 __pycache__
+transform/target
+transform/logs
+.pytest_cache
+.ruff_cache
+*.duckdb

@@ -61,7 +61,9 @@ mle-data-pipeline/
 ├── flows/                # Prefect flows and their entry point
 ├── tests/                # unit and integration tests
 ├── docs/                 # brief, traceability, data sources, design, ADRs
-├── Makefile              # run, test and orchestration targets
+├── Dockerfile            # pipeline image
+├── compose.yaml          # Prefect server, flow and pipeline services
+├── Makefile              # run, test, orchestration and Docker targets
 ├── pyproject.toml        # project configuration and dependencies
 └── uv.lock               # dependency lock file
 ```
@@ -119,6 +121,21 @@ make flow-run PARTITION=all       # January to March, one after another
 make flow-serve                   # serve the monthly schedule (keeps running, Ctrl+C to stop)
 ```
 
+### Run with Docker
+
+The image runs the pipeline as a batch (no port, no API). Data (downloads, database, results) lives in a Docker named volume called `data`, so it is separate from your working folder.
+
+```bash
+make docker-build                      # build the image
+make docker-flow                       # start the Prefect server, then run all months through it
+make docker-pipeline PARTITION=2025-01 # plain entry point, one month, no Prefect
+make docker-results                    # list the exported files in the volume
+make docker-down                       # stop the server, keep the data
+make docker-clean                      # delete the data volume (asks first)
+```
+
+The Prefect UI for container runs is at http://127.0.0.1:4201. Run `docker-flow` and `docker-pipeline` one at a time, because the database allows a single writer. Settings (database path, months, folders) are in the `environment` block of `compose.yaml`. `make docker-test` builds the image and runs a small synthetic month inside it, with no network.
+
 ### Follow a run
 
 Each month runs as a flow named `green-trips-<month>` with four tasks in order: download, load, transform (dbt seed, run and test) and export. Only the download retries (3 times, 60 seconds apart), because it is the only step that touches the network. A failed step stops the run, and the steps after it do not start. `green-trips-all` runs the three months one after another.
@@ -138,6 +155,8 @@ If a run later reports "Failed to reach API", run `make orch-clean` and try agai
 3. Run each new month with `make pipeline-run PARTITION=<YYYY-MM>`, or all of them with `make flow-run PARTITION=all`.
 
 Rerunning a month replaces its rows; it never appends duplicates.
+
+With Docker, the months come from `compose.yaml` instead of `.env`: edit `PARTITIONS` there and the range in `transform/dbt_project.yml`, then run `make docker-build` so the image picks up the change.
 
 ## Run the checks
 

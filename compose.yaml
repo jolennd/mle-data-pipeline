@@ -1,0 +1,43 @@
+# Settings are paths and months, not secrets. A real secret goes in a git-ignored env file, never here.
+services:
+  prefect:
+    build: .
+    command: prefect server start --host 0.0.0.0 --port 4200
+    ports:
+      - "4201:4200"   # UI at http://127.0.0.1:4201 (4200 stays free for make orch-server)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  flow:
+    build: .
+    profiles: ["jobs"]          # started only by `docker compose run flow`
+    command: python -m flows all
+    environment: &settings
+      DB_CONN: duckdb:///data/warehouse.duckdb   # relative to /app
+      SOURCE_BASE_URL: https://d37ci6vzurychx.cloudfront.net/trip-data
+      SOURCE_FILE_PATTERN: green_tripdata_{partition}.parquet
+      PARTITIONS: "2025-01,2025-02,2025-03"
+      STAGING_DIR: data/raw
+      PROCESSED_DIR: data/processed
+      PREFECT_API_URL: http://prefect:4200/api
+    volumes:
+      - data:/app/data
+    depends_on:
+      prefect:
+        condition: service_healthy
+
+  pipeline:
+    build: .
+    profiles: ["jobs"]          # plain entry point, no orchestrator
+    entrypoint: ["python", "-m", "data_pipeline.pipeline"]
+    environment:
+      <<: *settings
+      PREFECT_API_URL: ""
+    volumes:
+      - data:/app/data
+
+volumes:
+  data: {}
