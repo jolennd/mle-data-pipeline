@@ -156,6 +156,8 @@ If a run later reports "Failed to reach API", run `make orch-clean` and try agai
 
 Rerunning a month replaces its rows; it never appends duplicates.
 
+With Docker, the months come from `compose.yaml` instead of `.env`: edit `PARTITIONS` there and the range in `transform/dbt_project.yml`, then run `make docker-build` so the image picks up the change.
+
 ## Run the checks
 
 ```bash
