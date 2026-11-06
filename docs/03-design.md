@@ -22,6 +22,6 @@
 ## Tool choices (one per axis, see stack.toml)
 - database, duckdb: embedded single-file database, no server to run locally. One writer at a time, so loads run one month at a time.
 - transform, dbt: versioned SQL models with built-in tests. The totals reconciliation (A2) runs here.
-- orchestrator, prefect: Python-native flows for download, load, transform and export. The download task retries 3 times, 60 seconds apart. The flow takes one month (YYYY-MM) as its parameter. A failed step stops the run (M5).
+- orchestrator, prefect: Python-native flows for download, load, transform and export. The download task retries 3 times, 60 seconds apart. The flow takes one month (YYYY-MM) as its parameter. A failed step stops the run with a clear error.
 - deploy, later: local only.
 - monitoring, later: local only.

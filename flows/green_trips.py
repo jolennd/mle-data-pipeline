@@ -22,7 +22,8 @@ def check_partition(partition: str) -> None:
         raise ValueError(f"partition {partition} is not in PARTITIONS")
 
 
-# Only the download touches the network, so only it retries (M5 idempotent steps).
+# Only the download touches the network, so only it retries.
+# Every step is safe to rerun.
 @task(retries=3, retry_delay_seconds=60)
 def download(partition: str) -> None:
     pipeline.download_partition(partition)

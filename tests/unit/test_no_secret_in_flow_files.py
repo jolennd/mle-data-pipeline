@@ -34,7 +34,7 @@ def test_no_secret_in_flow_files():
 
 
 def test_flows_never_open_the_database_themselves():
-    """The connection goes through db.py, which reads DB_CONN (M1, M4)."""
+    """The connection goes through db.py, which reads DB_CONN from the environment."""
     offenders = [
         p.name
         for p in _files()
