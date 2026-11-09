@@ -6,9 +6,9 @@ dependencies = [
     "click>=8.5.0",
     "dbt-duckdb>=1.11.1",
     "duckdb>=2.0.0",
-    "pandas>=3.0.5",
-    "prefect>=3.8.6",
-    "pyarrow>=25.0.1",
+    "pandas>=3.1.1",
+    "prefect>=3.9.1",
+    "pyarrow>=26.0.1",
     "requests>=2.34.2",
 ]
 
@@ -23,7 +23,7 @@ packages = ["src/data_pipeline"]
 dev = [
     "ipykernel>=7.3.0",
     "pytest>=9.1.1",
-    "ruff>=0.17.3",
+    "ruff>=0.17.4",
 ]
 
 [tool.ty.environment]
